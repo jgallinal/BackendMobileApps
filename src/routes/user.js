@@ -56,4 +56,8 @@ router.delete("/user/:id", (req, res) => {
     .catch((error) => res.json({message : error}));
 });
 
+router.get('/hola', (req,res) =>{
+    console.log("Yes");
+});
+
 module.exports = router;

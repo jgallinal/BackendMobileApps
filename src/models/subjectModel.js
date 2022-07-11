@@ -10,7 +10,7 @@ const subjectSchema = mongoose.Schema({
         required: true
     },
     career: {
-        type: String,
+        type: [String],
         required: true,
     },
     year: {

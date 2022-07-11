@@ -43,3 +43,50 @@ Content-Type: application/json
 }
 ###
 GET http://localhost:9000/api/claims HTTP/1.1
+
+###
+POST http://localhost:9000/api/user HTTP/1.1
+Content-Type: application/json
+
+{
+    "firstName": "Florencia",
+    "lastName": "Migues",
+    "password": "12345678",
+    "mail": "fmigues@correo.um.edu.uy",
+    "isStudent": false,
+    "subjects": ["1"]
+}
+
+###
+POST  http://localhost:9000/login HTTP/1.1
+Content-Type: application/json
+
+{
+    "mail": "fmigues@correo.um.edu.uy",
+    "password": "12345678"
+}
+
+###
+POST http://localhost:9000/api/newGrid HTTP/1.1
+Content-Type: application/json
+
+{
+    "plan": "2022",
+    "carreer": "Ingenieria en informatica",
+    "link": "https://drive.google.com/uc?export=download&id=11YQvQS0KheqkMnt0qs0x_fxgVRAULo_X"
+}
+
+###
+POST http://localhost:9000/api/newGrid HTTP/1.1
+Content-Type: application/json
+
+{
+    "plan": "2022",
+    "carreer": "INFO",
+    "link": "https://drive.google.com/uc?export=download&id=11YQvQS0KheqkMnt0qs0x_fxgVRAULo_X"
+}
+
+###
+GET http://localhost:9000/api/grid/2022/INFO HTTP/1.1
+
+
