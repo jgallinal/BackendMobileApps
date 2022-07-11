@@ -32,7 +32,7 @@ router.get("/user/:id", (req, res) => {
 router.get("/userByMail/:mail", (req, res) => {
     const { mail } = req.params;
     userSchema
-    .findOne({ _mail: mail })
+    .findOne({ mail: mail })
     .then((data) => res.json(data))
     .catch((error) => res.json({message : error}));
 });
