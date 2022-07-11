@@ -89,4 +89,5 @@ Content-Type: application/json
 ###
 GET http://localhost:9000/api/grid/2022/INFO HTTP/1.1
 
-
+###
+GET http://localhost:9000/api/userByMail/fmigues@correo.um.edu.uy HTTP/1.1
