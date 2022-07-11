@@ -7,7 +7,7 @@ router.get("/grid/:plan/:carreer", (req,res) => {
     const { plan } = req.params.plan;
     const { carreer } = req.params.carreer;
     gridSchema
-    .find( {_plan: plan, _carreer: carreer})
+    .find( {plan: plan, carreer: carreer})
     .then((data) => res.json(data))
     .catch((error) => res.json({message : error}));
 });

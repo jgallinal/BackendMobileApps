@@ -13,16 +13,13 @@ const port = process.env.PORT || 9000;
 const cookieParser = require('cookie-parser');
 //const initializePassport = require('./passport-config');
 const PassportLocal = require('passport-local').Strategy;
-const User = require("../src/models/userModel");
+const userSchema = require("../src/models/userModel");
 const router = express.Router();
-
-
-/*
-initializePassport(
-  passport,
-  email => users.find(user => user.email === email),
-  id => users.find(user => user.id === id)
-)*/
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const localStrategy = require("passport-local").Strategy;
+const crypto = require('crypto');
+const { STATUS_CODES } = require('http');
 
 mongoose
 .connect(
@@ -31,91 +28,97 @@ mongoose
 .then(() => console.log(("Connected to DB")))
 .catch((error) => console.log(error));
 
+ /***********************************************************************************
+     *                                  Middlewares
+     **********************************************************************************/
 
-app.use(express.urlencoded({ extended: true }));
-//app.use(flash());
+  app.use(
+    cors({
+      origin: ["http://localhost:19006", "http://localhost:19000"],// <-- location of the react app were connecting to
+      credentials: true,
+    })
+  );
+  app.use(express.json());
+    
+  app.use("/api", userRoutes);
+  app.use("/api", subjectRoutes);
+  app.use("/api", claimRoutes);
+  app.use("/api", gridRoutes);
+  app.use(express.urlencoded({ extended: true }));
+  app.use(cookieParser());
+
 app.use(session({
   secret: "secretcode",
     resave: true,
     saveUninitialized: true
 }));
 
-require("./passportConfig")(passport);
 
 
 app.use(passport.initialize())
 app.use(passport.session())
 
+require("./passportConfig")(passport);
+
+
 
 //END OF MIDDLEWARE
 
 //Routes
-app.use(function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});
-app.use(express.json());
-app.use("/api", userRoutes);
-app.use("/api", subjectRoutes);
-app.use("/api", claimRoutes);
-app.use("/api", gridRoutes);
+app.post("/login", (req, res) => {
+  console.log("No")
+  userSchema.findOne({ mail: req.body.mail }, async (err, doc) => {
+    if (doc) {
+    bcrypt.compare(req.body.password, doc.password, (err, result) => {
+    if (result === true) {
+      res.send("Successfully Authenticated");
+    } else {
+      res.status(400);
+      res.send(400);
 
-
+    }});}})});
+    
+/*
 app.post("/login", (req, res, next) => {
-  console.log("Entro")
-  passport.authenticate("local", (err, userSchema, info) => {
-    if (err) throw err;
-    console.log(err);
-    if (!userSchema) res.send("No User Exists");
-    else {
+  console.log("body parsing", req.body);
+  passport.authenticate("local", (err,userSchema,info) => {
+    if(err) throw err;
+    if (!userSchema) res.send("No existe");
+    else{
       req.logIn(userSchema, (err) => {
         if (err) throw err;
         res.send("Successfully Authenticated");
         console.log(req.userSchema);
       });
     }
-  })(req, res);
+  })(req, res, next);
 });
-
+*/
 app.get("/userPrueba", (req, res) => {
-  res.send(req.userSchema); // The req.user stores the entire user that has been authenticated inside of it.
-});
-/*
-app.get('/', checkAuthenticated, (req, res) => {
-  res.send("Logrado");
+  res.send("req"); // The req.user stores the entire user that has been authenticated inside of it.
 });
 
-app.get('/login', checkNotAuthenticated, (req, res) => {
-  res.send("No entro");
-});
 
-app.post('/login', checkNotAuthenticated, passport.authenticate('local', {
-    successRedirect: '/',
-    failureRedirect: '/login',
-    failureFlash: true
-  }))
-  
-
-app.delete('/logout', (req, res) => {
-    req.logOut()
-    res.redirect('/login')
-  })
-  
-  function checkAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) {
-      return next()
+app.post("/register", (req, res) => {
+  userSchema.findOne({ mail: req.body.mail }, async (err, doc) => {
+    if (err) throw err;
+    if (doc) res.send("User Already Exists");
+    if (!doc) {
+      const hashedPassword = await bcrypt.hash(req.body.password, 10);
+      const { firstName, lastName, mail, password, isStudent, subjects } = req.body;
+      console.log(req.body)
+      const newUser = new userSchema({
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        password: hashedPassword,
+        mail: req.body.mail,
+        isStudent: req.body.isStudent,
+        subjects: req.body.subjects
+      });
+      await newUser.save();
+      res.send("User Created");
     }
-  
-    res.redirect('/login')
-  }
-  
-  function checkNotAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) {
-      return res.redirect('/')
-    }
-    next()
-  }*/
+  });
+});
 
 app.listen(port, () => console.log("Server listening on port", port));
